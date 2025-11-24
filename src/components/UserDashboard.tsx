@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { Package, MapPin, CreditCard, User as UserIcon, FileText, AlertCircle } from 'lucide-react';
 import { projectId, publicAnonKey } from '../utils/supabase/info';
-import type { User } from '../App';
+import { useAuth } from '../context/AuthContext';
+import { useNavigate } from 'react-router-dom';
 
 type Order = {
   id: string;
@@ -12,23 +13,27 @@ type Order = {
   tracking?: string;
 };
 
-type UserDashboardProps = {
-  user: User;
-  onViewOrder: (orderId: string) => void;
-};
-
-export function UserDashboard({ user, onViewOrder }: UserDashboardProps) {
+export function UserDashboard() {
+  const { user } = useAuth();
+  const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState<'orders' | 'profile'>('orders');
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    if (!user) {
+        navigate('/login');
+        return;
+    }
+
     if (activeTab === 'orders') {
       fetchOrders();
     }
-  }, [activeTab]);
+  }, [activeTab, user]);
 
   const fetchOrders = async () => {
+    if (!user) return;
+    
     setLoading(true);
     try {
       const response = await fetch(
@@ -69,6 +74,8 @@ export function UserDashboard({ user, onViewOrder }: UserDashboardProps) {
         return 'bg-gray-100 text-gray-800';
     }
   };
+
+  if (!user) return null;
 
   return (
     <div className="container mx-auto px-4 py-8">

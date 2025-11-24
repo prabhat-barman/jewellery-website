@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { Star, ShoppingCart, Heart, Share2, ChevronLeft, Truck, Shield, RotateCcw } from 'lucide-react';
 import { projectId, publicAnonKey } from '../utils/supabase/info';
-import type { CartItem } from '../App';
+import { useParams, useNavigate } from 'react-router-dom';
+import { useCart } from '../context/CartContext';
 
 type Product = {
   id: string;
@@ -19,13 +20,11 @@ type Product = {
   enabled: boolean;
 };
 
-type ProductDetailProps = {
-  productId: string;
-  onAddToCart: (item: CartItem) => void;
-  onBack: () => void;
-};
-
-export function ProductDetail({ productId, onAddToCart, onBack }: ProductDetailProps) {
+export function ProductDetail() {
+  const { id } = useParams<{ id: string }>();
+  const navigate = useNavigate();
+  const { addToCart } = useCart();
+  
   const [product, setProduct] = useState<Product | null>(null);
   const [loading, setLoading] = useState(true);
   const [quantity, setQuantity] = useState(1);
@@ -34,12 +33,12 @@ export function ProductDetail({ productId, onAddToCart, onBack }: ProductDetailP
 
   useEffect(() => {
     fetchProduct();
-  }, [productId]);
+  }, [id]);
 
   const fetchProduct = async () => {
     try {
       const response = await fetch(
-        `https://${projectId}.supabase.co/functions/v1/make-server-ff9d2bf9/products/${productId}`,
+        `https://${projectId}.supabase.co/functions/v1/make-server-ff9d2bf9/products/${id}`,
         {
           headers: {
             'Authorization': `Bearer ${publicAnonKey}`,
@@ -63,7 +62,7 @@ export function ProductDetail({ productId, onAddToCart, onBack }: ProductDetailP
 
     const finalPrice = product.price - (product.price * product.discount / 100);
     
-    onAddToCart({
+    addToCart({
       productId: product.id,
       name: product.name,
       price: finalPrice,
@@ -94,7 +93,7 @@ export function ProductDetail({ productId, onAddToCart, onBack }: ProductDetailP
         <div className="text-center">
           <p className="text-gray-600 mb-4">Product not found</p>
           <button
-            onClick={onBack}
+            onClick={() => navigate('/products')}
             className="text-amber-600 hover:text-amber-700"
           >
             Go Back
@@ -111,7 +110,7 @@ export function ProductDetail({ productId, onAddToCart, onBack }: ProductDetailP
     <div className="container mx-auto px-4 py-8">
       {/* Back Button */}
       <button
-        onClick={onBack}
+        onClick={() => navigate('/products')}
         className="flex items-center gap-2 text-gray-600 hover:text-gray-900 mb-6"
       >
         <ChevronLeft className="w-5 h-5" />

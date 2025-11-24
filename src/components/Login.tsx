@@ -1,24 +1,26 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Mail, Lock, AlertCircle, Crown } from 'lucide-react';
-import { createClient } from '@supabase/supabase-js';
-import { projectId, publicAnonKey } from '../utils/supabase/info';
-import type { User } from '../App';
+import { useAuth } from '../context/AuthContext';
+import { supabase } from '../context/AuthContext';
+import { Link, useNavigate } from 'react-router-dom';
 
-const supabase = createClient(
-  `https://${projectId}.supabase.co`,
-  publicAnonKey
-);
-
-type LoginProps = {
-  onLogin: (user: User) => void;
-  onRegister: () => void;
-};
-
-export function Login({ onLogin, onRegister }: LoginProps) {
+export function Login() {
+  const navigate = useNavigate();
+  const { user, setUser } = useAuth();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    if (user) {
+      if (user.isAdmin) {
+        navigate('/admin');
+      } else {
+        navigate('/');
+      }
+    }
+  }, [user, navigate]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -34,13 +36,23 @@ export function Login({ onLogin, onRegister }: LoginProps) {
       if (signInError) throw signInError;
 
       if (data.session) {
-        onLogin({
-          id: data.user.id,
-          email: data.user.email!,
-          name: data.user.user_metadata?.name || data.user.email!,
-          isAdmin: data.user.user_metadata?.isAdmin || false,
-          accessToken: data.session.access_token,
-        });
+        // The AuthProvider will pick up the session change automatically via onAuthStateChange if we had that set up,
+        // but currently AuthProvider only checks on mount.
+        // Let's manually update the user in context or just reload.
+        // Since we don't have a listener in AuthProvider yet (my bad), let's update it manually.
+        // Wait, I should update AuthContext to listen to changes.
+        // For now, let's just update the user manually.
+        
+        const { data: { user: authUser } } = await supabase.auth.getUser(data.session.access_token);
+          if (authUser) {
+            setUser({
+              id: authUser.id,
+              email: authUser.email!,
+              name: authUser.user_metadata?.name || authUser.email!,
+              isAdmin: authUser.user_metadata?.isAdmin || false,
+              accessToken: data.session.access_token,
+            });
+          }
       }
     } catch (err: any) {
       setError(err.message || 'Failed to login. Please check your credentials.');
@@ -138,12 +150,12 @@ export function Login({ onLogin, onRegister }: LoginProps) {
           <div className="text-center">
             <p className="text-gray-600">
               Don't have an account?{' '}
-              <button
-                onClick={onRegister}
+              <Link
+                to="/register"
                 className="text-amber-600 hover:text-amber-700"
               >
                 Register Now
-              </button>
+              </Link>
             </p>
           </div>
 

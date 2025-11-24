@@ -1,11 +1,8 @@
 import React from 'react';
 import { Crown, Mail, Phone, MapPin, Facebook, Instagram, Twitter } from 'lucide-react';
+import { Link } from 'react-router-dom';
 
-type FooterProps = {
-  onNavigate: (page: string) => void;
-};
-
-export function Footer({ onNavigate }: FooterProps) {
+export function Footer() {
   return (
     <footer className="bg-gray-900 text-gray-300">
       <div className="container mx-auto px-4 py-12">
@@ -37,24 +34,24 @@ export function Footer({ onNavigate }: FooterProps) {
             <h3 className="text-white mb-4">Quick Links</h3>
             <ul className="space-y-2 text-sm">
               <li>
-                <button onClick={() => onNavigate('home')} className="hover:text-amber-500 transition-colors">
+                <Link to="/" className="hover:text-amber-500 transition-colors">
                   Home
-                </button>
+                </Link>
               </li>
               <li>
-                <button onClick={() => onNavigate('products')} className="hover:text-amber-500 transition-colors">
+                <Link to="/products" className="hover:text-amber-500 transition-colors">
                   All Products
-                </button>
+                </Link>
               </li>
               <li>
-                <button className="hover:text-amber-500 transition-colors">
+                <Link to="/about" className="hover:text-amber-500 transition-colors">
                   About Us
-                </button>
+                </Link>
               </li>
               <li>
-                <button className="hover:text-amber-500 transition-colors">
+                <Link to="/contact" className="hover:text-amber-500 transition-colors">
                   Contact Us
-                </button>
+                </Link>
               </li>
             </ul>
           </div>
@@ -64,24 +61,24 @@ export function Footer({ onNavigate }: FooterProps) {
             <h3 className="text-white mb-4">Customer Service</h3>
             <ul className="space-y-2 text-sm">
               <li>
-                <button className="hover:text-amber-500 transition-colors">
+                <Link to="/shipping-policy" className="hover:text-amber-500 transition-colors">
                   Shipping Policy
-                </button>
+                </Link>
               </li>
               <li>
-                <button className="hover:text-amber-500 transition-colors">
+                <Link to="/returns-policy" className="hover:text-amber-500 transition-colors">
                   Returns & Exchange
-                </button>
+                </Link>
               </li>
               <li>
-                <button className="hover:text-amber-500 transition-colors">
+                <Link to="/privacy-policy" className="hover:text-amber-500 transition-colors">
                   Privacy Policy
-                </button>
+                </Link>
               </li>
               <li>
-                <button className="hover:text-amber-500 transition-colors">
+                <Link to="/terms-conditions" className="hover:text-amber-500 transition-colors">
                   Terms & Conditions
-                </button>
+                </Link>
               </li>
             </ul>
           </div>

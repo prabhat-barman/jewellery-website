@@ -1,19 +1,25 @@
 import React, { useState } from 'react';
 import { ShoppingCart, User, Menu, X, Search, Crown } from 'lucide-react';
-import type { User as UserType } from '../App';
+import { Link, useNavigate } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
+import { useCart } from '../context/CartContext';
 
-type HeaderProps = {
-  user: UserType | null;
-  cartCount: number;
-  onNavigate: (page: string) => void;
-  onLogout: () => void;
-};
-
-export function Header({ user, cartCount, onNavigate, onLogout }: HeaderProps) {
+export function Header() {
+  const { user, logout } = useAuth();
+  const { cartCount } = useCart();
+  const navigate = useNavigate();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
 
   const categories = ['Rings', 'Earrings', 'Necklaces', 'Bangles', 'Bracelets', 'Pendants'];
+
+  const handleSearch = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (searchQuery.trim()) {
+      navigate(`/products?q=${encodeURIComponent(searchQuery)}`);
+      setIsMenuOpen(false);
+    }
+  };
 
   return (
     <header className="bg-white shadow-sm sticky top-0 z-50">
@@ -26,31 +32,31 @@ export function Header({ user, cartCount, onNavigate, onLogout }: HeaderProps) {
       <div className="container mx-auto px-4">
         <div className="flex items-center justify-between py-4">
           {/* Logo */}
-          <button
-            onClick={() => onNavigate('home')}
+          <Link
+            to="/"
             className="flex items-center gap-2 hover:opacity-80 transition-opacity"
           >
             <Crown className="w-8 h-8 text-amber-600" />
             <span className="text-2xl text-amber-900">Jewel Palace</span>
-          </button>
+          </Link>
 
           {/* Desktop Navigation */}
           <nav className="hidden lg:flex items-center gap-8">
             {categories.map((category) => (
-              <button
+              <Link
                 key={category}
-                onClick={() => onNavigate('products')}
+                to={`/category/${category.toLowerCase()}`}
                 className="text-gray-700 hover:text-amber-600 transition-colors"
               >
                 {category}
-              </button>
+              </Link>
             ))}
           </nav>
 
           {/* Right Actions */}
           <div className="flex items-center gap-4">
             {/* Search */}
-            <div className="hidden md:flex items-center bg-gray-100 rounded-full px-4 py-2">
+            <form onSubmit={handleSearch} className="hidden md:flex items-center bg-gray-100 rounded-full px-4 py-2">
               <input
                 type="text"
                 placeholder="Search jewellery..."
@@ -58,8 +64,10 @@ export function Header({ user, cartCount, onNavigate, onLogout }: HeaderProps) {
                 onChange={(e) => setSearchQuery(e.target.value)}
                 className="bg-transparent outline-none text-sm w-48"
               />
-              <Search className="w-4 h-4 text-gray-500" />
-            </div>
+              <button type="submit">
+                <Search className="w-4 h-4 text-gray-500" />
+              </button>
+            </form>
 
             {/* User Menu */}
             {user ? (
@@ -71,38 +79,38 @@ export function Header({ user, cartCount, onNavigate, onLogout }: HeaderProps) {
                 <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg py-2 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all">
                   {user.isAdmin ? (
                     <>
-                      <button
-                        onClick={() => onNavigate('admin')}
+                      <Link
+                        to="/admin"
                         className="block w-full text-left px-4 py-2 hover:bg-gray-100"
                       >
                         Admin Dashboard
-                      </button>
-                      <button
-                        onClick={() => onNavigate('home')}
+                      </Link>
+                      <Link
+                        to="/"
                         className="block w-full text-left px-4 py-2 hover:bg-gray-100"
                       >
                         View Store
-                      </button>
+                      </Link>
                     </>
                   ) : (
                     <>
-                      <button
-                        onClick={() => onNavigate('dashboard')}
+                      <Link
+                        to="/dashboard"
                         className="block w-full text-left px-4 py-2 hover:bg-gray-100"
                       >
                         My Profile
-                      </button>
-                      <button
-                        onClick={() => onNavigate('dashboard')}
+                      </Link>
+                      <Link
+                        to="/dashboard"
                         className="block w-full text-left px-4 py-2 hover:bg-gray-100"
                       >
                         My Orders
-                      </button>
+                      </Link>
                     </>
                   )}
                   <hr className="my-2" />
                   <button
-                    onClick={onLogout}
+                    onClick={() => logout()}
                     className="block w-full text-left px-4 py-2 hover:bg-gray-100 text-red-600"
                   >
                     Logout
@@ -110,18 +118,18 @@ export function Header({ user, cartCount, onNavigate, onLogout }: HeaderProps) {
                 </div>
               </div>
             ) : (
-              <button
-                onClick={() => onNavigate('login')}
+              <Link
+                to="/login"
                 className="flex items-center gap-2 text-gray-700 hover:text-amber-600"
               >
                 <User className="w-5 h-5" />
                 <span className="hidden md:inline">Login</span>
-              </button>
+              </Link>
             )}
 
             {/* Cart */}
-            <button
-              onClick={() => onNavigate('cart')}
+            <Link
+              to="/cart"
               className="relative flex items-center gap-2 text-gray-700 hover:text-amber-600"
             >
               <ShoppingCart className="w-5 h-5" />
@@ -130,7 +138,7 @@ export function Header({ user, cartCount, onNavigate, onLogout }: HeaderProps) {
                   {cartCount}
                 </span>
               )}
-            </button>
+            </Link>
 
             {/* Mobile Menu Toggle */}
             <button
@@ -147,7 +155,7 @@ export function Header({ user, cartCount, onNavigate, onLogout }: HeaderProps) {
           <div className="lg:hidden py-4 border-t">
             <div className="flex flex-col gap-4">
               {/* Mobile Search */}
-              <div className="flex items-center bg-gray-100 rounded-full px-4 py-2">
+              <form onSubmit={handleSearch} className="flex items-center bg-gray-100 rounded-full px-4 py-2">
                 <input
                   type="text"
                   placeholder="Search jewellery..."
@@ -155,21 +163,21 @@ export function Header({ user, cartCount, onNavigate, onLogout }: HeaderProps) {
                   onChange={(e) => setSearchQuery(e.target.value)}
                   className="bg-transparent outline-none text-sm flex-1"
                 />
-                <Search className="w-4 h-4 text-gray-500" />
-              </div>
+                <button type="submit">
+                  <Search className="w-4 h-4 text-gray-500" />
+                </button>
+              </form>
 
               {/* Mobile Categories */}
               {categories.map((category) => (
-                <button
+                <Link
                   key={category}
-                  onClick={() => {
-                    onNavigate('products');
-                    setIsMenuOpen(false);
-                  }}
+                  to={`/category/${category.toLowerCase()}`}
+                  onClick={() => setIsMenuOpen(false)}
                   className="text-left text-gray-700 hover:text-amber-600 transition-colors py-2"
                 >
                   {category}
-                </button>
+                </Link>
               ))}
             </div>
           </div>

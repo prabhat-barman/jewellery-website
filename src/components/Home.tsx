@@ -1,13 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { ChevronLeft, ChevronRight, Star, Sparkles, Shield, Truck } from 'lucide-react';
+import { Link, useNavigate } from 'react-router-dom';
 import { ImageWithFallback } from './figma/ImageWithFallback';
 
-type HomeProps = {
-  onViewProduct: (productId: string) => void;
-  onViewCategory: (category: string) => void;
-};
-
-export function Home({ onViewProduct, onViewCategory }: HomeProps) {
+export function Home() {
+  const navigate = useNavigate();
   const [currentSlide, setCurrentSlide] = useState(0);
 
   const banners = [
@@ -90,12 +87,12 @@ export function Home({ onViewProduct, onViewCategory }: HomeProps) {
               <div className="text-center text-white px-4">
                 <h1 className="text-5xl md:text-6xl mb-4">{banner.title}</h1>
                 <p className="text-xl md:text-2xl mb-8">{banner.subtitle}</p>
-                <button
-                  onClick={() => onViewCategory('all')}
-                  className="bg-white text-gray-900 px-8 py-3 rounded-full hover:bg-gray-100 transition-colors"
+                <Link
+                  to="/products"
+                  className="bg-white text-gray-900 px-8 py-3 rounded-full hover:bg-gray-100 transition-colors inline-block"
                 >
                   Shop Now
-                </button>
+                </Link>
               </div>
             </div>
           </div>
@@ -154,17 +151,17 @@ export function Home({ onViewProduct, onViewCategory }: HomeProps) {
 
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-6">
             {categories.map((category) => (
-              <button
+              <Link
                 key={category.name}
-                onClick={() => onViewCategory(category.name)}
-                className="bg-gradient-to-br from-amber-50 to-amber-100 p-8 rounded-xl hover:shadow-lg transition-shadow group"
+                to={`/category/${category.name.toLowerCase()}`}
+                className="bg-gradient-to-br from-amber-50 to-amber-100 p-8 rounded-xl hover:shadow-lg transition-shadow group flex flex-col items-center"
               >
                 <div className="text-5xl mb-4 group-hover:scale-110 transition-transform">
                   {category.icon}
                 </div>
                 <h3 className="mb-2">{category.name}</h3>
                 <p className="text-sm text-gray-600">{category.count}</p>
-              </button>
+              </Link>
             ))}
           </div>
         </div>
@@ -182,7 +179,7 @@ export function Home({ onViewProduct, onViewCategory }: HomeProps) {
             <div
               key={item}
               className="bg-white rounded-xl overflow-hidden shadow-md hover:shadow-xl transition-shadow group cursor-pointer"
-              onClick={() => onViewProduct(`featured-${item}`)}
+              onClick={() => navigate('/products')}
             >
               <div className="relative aspect-square bg-gradient-to-br from-amber-100 to-amber-200">
                 <div className="absolute inset-0 flex items-center justify-center text-6xl">
@@ -215,12 +212,12 @@ export function Home({ onViewProduct, onViewCategory }: HomeProps) {
         </div>
 
         <div className="text-center mt-12">
-          <button
-            onClick={() => onViewCategory('all')}
-            className="bg-amber-600 text-white px-8 py-3 rounded-full hover:bg-amber-700 transition-colors"
+          <Link
+            to="/products"
+            className="bg-amber-600 text-white px-8 py-3 rounded-full hover:bg-amber-700 transition-colors inline-block"
           >
             View All Products
-          </button>
+          </Link>
         </div>
       </div>
 

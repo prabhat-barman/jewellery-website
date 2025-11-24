@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Filter, Grid, List, Star, ChevronDown } from 'lucide-react';
 import { projectId, publicAnonKey } from '../utils/supabase/info';
+import { useParams, useSearchParams, useNavigate } from 'react-router-dom';
 
 type Product = {
   id: string;
@@ -17,12 +18,12 @@ type Product = {
   enabled: boolean;
 };
 
-type ProductListingProps = {
-  category: string | null;
-  onViewProduct: (productId: string) => void;
-};
+export function ProductListing() {
+  const { category } = useParams<{ category: string }>();
+  const [searchParams] = useSearchParams();
+  const searchQuery = searchParams.get('q');
+  const navigate = useNavigate();
 
-export function ProductListing({ category, onViewProduct }: ProductListingProps) {
   const [products, setProducts] = useState<Product[]>([]);
   const [filteredProducts, setFilteredProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
@@ -39,12 +40,23 @@ export function ProductListing({ category, onViewProduct }: ProductListingProps)
   const materials = ['Gold', 'Silver', 'Diamond', 'Platinum', 'Artificial'];
 
   useEffect(() => {
+    if (category) {
+      // Capitalize first letter to match data if needed, or ensure case-insensitive comparison
+      const formattedCategory = category.charAt(0).toUpperCase() + category.slice(1);
+      setSelectedCategories([formattedCategory]);
+    } else {
+      // Reset category filter if not in URL
+      setSelectedCategories([]);
+    }
+  }, [category]);
+
+  useEffect(() => {
     fetchProducts();
   }, []);
 
   useEffect(() => {
     applyFilters();
-  }, [products, priceRange, selectedMaterials, selectedCategories, sortBy]);
+  }, [products, priceRange, selectedMaterials, selectedCategories, sortBy, searchQuery]);
 
   const fetchProducts = async () => {
     try {
@@ -73,6 +85,16 @@ export function ProductListing({ category, onViewProduct }: ProductListingProps)
 
     // Filter by enabled status
     filtered = filtered.filter(p => p.enabled);
+
+    // Filter by Search Query
+    if (searchQuery) {
+      const query = searchQuery.toLowerCase();
+      filtered = filtered.filter(p => 
+        p.name.toLowerCase().includes(query) || 
+        p.description?.toLowerCase().includes(query) ||
+        p.category.toLowerCase().includes(query)
+      );
+    }
 
     // Filter by price
     filtered = filtered.filter(
@@ -130,6 +152,18 @@ export function ProductListing({ category, onViewProduct }: ProductListingProps)
   };
 
   const toggleCategory = (cat: string) => {
+    // If we are on a specific category page, we might want to navigate to that category page
+    // or just filter locally. For now, let's filter locally but update URL if needed? 
+    // Actually, if user clicks a filter checkbox, it's a local filter.
+    // If they are on /category/rings, and click "Necklaces", what happens?
+    // Usually category pages only show that category.
+    // If we are on /products, we can select multiple.
+    
+    if (category) {
+       // If on a dedicated page, maybe we should redirect to /products? or just allow filtering
+       // Let's allow filtering.
+    }
+    
     setSelectedCategories(prev =>
       prev.includes(cat)
         ? prev.filter(c => c !== cat)
@@ -157,7 +191,7 @@ export function ProductListing({ category, onViewProduct }: ProductListingProps)
       {/* Header */}
       <div className="mb-8">
         <h1 className="text-4xl mb-2">
-          {category ? category : 'All Products'}
+          {searchQuery ? `Search Results for "${searchQuery}"` : (category ? category.charAt(0).toUpperCase() + category.slice(1) : 'All Products')}
         </h1>
         <p className="text-gray-600">
           Showing {filteredProducts.length} {filteredProducts.length === 1 ? 'product' : 'products'}
@@ -323,7 +357,7 @@ export function ProductListing({ category, onViewProduct }: ProductListingProps)
                 return (
                   <div
                     key={product.id}
-                    onClick={() => onViewProduct(product.id)}
+                    onClick={() => navigate(`/product/${product.id}`)}
                     className={`bg-white rounded-xl overflow-hidden shadow-md hover:shadow-xl transition-shadow cursor-pointer ${
                       viewMode === 'list' ? 'flex gap-4' : ''
                     }`}

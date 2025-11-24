@@ -1,12 +1,11 @@
 import React from 'react';
 import { CheckCircle, Package, Mail, ArrowRight } from 'lucide-react';
+import { useParams, useNavigate } from 'react-router-dom';
 
-type OrderConfirmationProps = {
-  orderId: string;
-  onContinueShopping: () => void;
-};
+export function OrderConfirmation() {
+  const { orderId } = useParams<{ orderId: string }>();
+  const navigate = useNavigate();
 
-export function OrderConfirmation({ orderId, onContinueShopping }: OrderConfirmationProps) {
   return (
     <div className="container mx-auto px-4 py-16">
       <div className="max-w-2xl mx-auto text-center">
@@ -107,7 +106,7 @@ export function OrderConfirmation({ orderId, onContinueShopping }: OrderConfirma
         {/* Action Buttons */}
         <div className="flex flex-col sm:flex-row gap-4 justify-center">
           <button
-            onClick={onContinueShopping}
+            onClick={() => navigate('/products')}
             className="bg-amber-600 text-white px-8 py-4 rounded-xl hover:bg-amber-700 transition-colors flex items-center justify-center gap-2"
           >
             Continue Shopping

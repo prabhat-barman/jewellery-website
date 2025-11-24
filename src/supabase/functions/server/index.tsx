@@ -62,7 +62,7 @@ app.post('/make-server-ff9d2bf9/auth/register', async (c) => {
 // ============================================================================
 
 // Get all products
-app.get('/make-server-ff9d2bf9/products', async (c) => {
+app.get('/make-server-ff9d2bf9/products', async (c:any) => {
   try {
     const products = await kv.getByPrefix('product:');
     return c.json({ products });

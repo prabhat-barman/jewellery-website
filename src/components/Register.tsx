@@ -1,14 +1,12 @@
 import React, { useState } from 'react';
 import { Mail, Lock, User as UserIcon, AlertCircle, CheckCircle, Crown } from 'lucide-react';
 import { projectId, publicAnonKey } from '../utils/supabase/info';
-import type { User } from '../App';
+import { Link, useNavigate } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
 
-type RegisterProps = {
-  onRegister: (user: User) => void;
-  onLogin: () => void;
-};
-
-export function Register({ onRegister, onLogin }: RegisterProps) {
+export function Register() {
+  const navigate = useNavigate();
+  const { setUser } = useAuth();
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -57,13 +55,18 @@ export function Register({ onRegister, onLogin }: RegisterProps) {
       
       // Auto-login after registration
       setTimeout(() => {
-        onRegister({
-          id: data.user.id,
-          email: data.user.email,
-          name: data.user.user_metadata?.name || name,
-          isAdmin: false,
-          accessToken: data.session.access_token,
-        });
+        if (data.user && data.session) {
+            setUser({
+              id: data.user.id,
+              email: data.user.email,
+              name: data.user.user_metadata?.name || name,
+              isAdmin: false,
+              accessToken: data.session.access_token,
+            });
+            navigate('/');
+        } else {
+             navigate('/login');
+        }
       }, 1500);
     } catch (err: any) {
       setError(err.message || 'Failed to create account. Please try again.');
@@ -183,13 +186,13 @@ export function Register({ onRegister, onLogin }: RegisterProps) {
               />
               <span className="text-sm text-gray-600">
                 I agree to the{' '}
-                <button type="button" className="text-amber-600 hover:text-amber-700">
+                <Link to="/terms-conditions" className="text-amber-600 hover:text-amber-700">
                   Terms & Conditions
-                </button>{' '}
+                </Link>{' '}
                 and{' '}
-                <button type="button" className="text-amber-600 hover:text-amber-700">
+                <Link to="/privacy-policy" className="text-amber-600 hover:text-amber-700">
                   Privacy Policy
-                </button>
+                </Link>
               </span>
             </div>
 
@@ -213,12 +216,12 @@ export function Register({ onRegister, onLogin }: RegisterProps) {
           <div className="text-center">
             <p className="text-gray-600">
               Already have an account?{' '}
-              <button
-                onClick={onLogin}
+              <Link
+                to="/login"
                 className="text-amber-600 hover:text-amber-700"
               >
                 Login
-              </button>
+              </Link>
             </p>
           </div>
         </div>

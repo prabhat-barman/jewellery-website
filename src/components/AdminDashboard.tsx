@@ -4,14 +4,15 @@ import { OrderManagement } from './admin/OrderManagement';
 import { DiscountManagement } from './admin/DiscountManagement';
 import { PaymentManagement } from './admin/PaymentManagement';
 import { Package, ShoppingCart, PercentIcon, CreditCard, BarChart3 } from 'lucide-react';
-import type { User } from '../App';
+import { useAuth } from '../context/AuthContext';
 
-type AdminDashboardProps = {
-  user: User;
-};
-
-export function AdminDashboard({ user }: AdminDashboardProps) {
+export function AdminDashboard() {
+  const { user } = useAuth();
   const [activeTab, setActiveTab] = useState<'overview' | 'products' | 'orders' | 'discounts' | 'payments'>('overview');
+
+  if (!user || !user.isAdmin) {
+      return <div className="p-8 text-center">Access Denied</div>;
+  }
 
   return (
     <div className="min-h-screen bg-gray-50">

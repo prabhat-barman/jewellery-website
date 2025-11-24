@@ -1,16 +1,12 @@
 import React from 'react';
 import { ShoppingCart, Trash2, Plus, Minus, ArrowRight, ArrowLeft } from 'lucide-react';
-import type { CartItem } from '../App';
+import { Link, useNavigate } from 'react-router-dom';
+import { useCart } from '../context/CartContext';
 
-type CartProps = {
-  items: CartItem[];
-  onUpdateQuantity: (productId: string, quantity: number) => void;
-  onRemove: (productId: string) => void;
-  onCheckout: () => void;
-  onContinueShopping: () => void;
-};
+export function Cart() {
+  const { cart: items, updateCartQuantity: onUpdateQuantity, removeFromCart: onRemove } = useCart();
+  const navigate = useNavigate();
 
-export function Cart({ items, onUpdateQuantity, onRemove, onCheckout, onContinueShopping }: CartProps) {
   const subtotal = items.reduce((sum, item) => sum + (item.price * item.quantity), 0);
   const shipping = subtotal >= 5000 ? 0 : 200;
   const tax = subtotal * 0.03; // 3% tax
@@ -27,12 +23,12 @@ export function Cart({ items, onUpdateQuantity, onRemove, onCheckout, onContinue
           <p className="text-gray-600 mb-8">
             Looks like you haven't added any items to your cart yet.
           </p>
-          <button
-            onClick={onContinueShopping}
-            className="bg-amber-600 text-white px-8 py-3 rounded-full hover:bg-amber-700 transition-colors"
+          <Link
+            to="/products"
+            className="bg-amber-600 text-white px-8 py-3 rounded-full hover:bg-amber-700 transition-colors inline-block"
           >
             Start Shopping
-          </button>
+          </Link>
         </div>
       </div>
     );
@@ -101,13 +97,13 @@ export function Cart({ items, onUpdateQuantity, onRemove, onCheckout, onContinue
             ))}
           </div>
 
-          <button
-            onClick={onContinueShopping}
-            className="mt-6 flex items-center gap-2 text-amber-600 hover:text-amber-700"
+          <Link
+            to="/products"
+            className="mt-6 flex items-center gap-2 text-amber-600 hover:text-amber-700 inline-block"
           >
             <ArrowLeft className="w-5 h-5" />
             Continue Shopping
-          </button>
+          </Link>
         </div>
 
         {/* Order Summary */}
@@ -146,7 +142,7 @@ export function Cart({ items, onUpdateQuantity, onRemove, onCheckout, onContinue
             </div>
 
             <button
-              onClick={onCheckout}
+              onClick={() => navigate('/checkout')}
               className="w-full bg-amber-600 text-white py-4 rounded-xl hover:bg-amber-700 transition-colors flex items-center justify-center gap-2"
             >
               Proceed to Checkout

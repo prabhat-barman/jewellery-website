@@ -1,23 +1,22 @@
 import React, { useState } from 'react';
 import { CreditCard, MapPin, User as UserIcon, Phone, Mail, ArrowLeft, AlertCircle } from 'lucide-react';
 import { projectId, publicAnonKey } from '../utils/supabase/info';
-import type { CartItem, User } from '../App';
+import { useCart } from '../context/CartContext';
+import { useAuth } from '../context/AuthContext';
+import { useNavigate } from 'react-router-dom';
 
-type CheckoutProps = {
-  cart: CartItem[];
-  user: User;
-  onOrderComplete: (orderId: string) => void;
-  onBack: () => void;
-};
+export function Checkout() {
+  const { cart, clearCart } = useCart();
+  const { user } = useAuth();
+  const navigate = useNavigate();
 
-export function Checkout({ cart, user, onOrderComplete, onBack }: CheckoutProps) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [step, setStep] = useState<'address' | 'payment'>('address');
 
   // Address Form
-  const [fullName, setFullName] = useState(user.name);
-  const [email, setEmail] = useState(user.email);
+  const [fullName, setFullName] = useState(user?.name || '');
+  const [email, setEmail] = useState(user?.email || '');
   const [phone, setPhone] = useState('');
   const [address, setAddress] = useState('');
   const [city, setCity] = useState('');
@@ -31,6 +30,21 @@ export function Checkout({ cart, user, onOrderComplete, onBack }: CheckoutProps)
   const shipping = subtotal >= 5000 ? 0 : 200;
   const tax = subtotal * 0.03;
   const total = subtotal + shipping + tax;
+
+  if (!user) {
+    // Should ideally be handled by route protection, but as a fallback:
+    return (
+      <div className="container mx-auto px-4 py-12 text-center">
+        <h2 className="text-2xl mb-4">Please Login to Checkout</h2>
+        <button
+          onClick={() => navigate('/login')}
+          className="bg-amber-600 text-white px-8 py-3 rounded-full hover:bg-amber-700 transition-colors"
+        >
+          Go to Login
+        </button>
+      </div>
+    );
+  }
 
   const handleAddressSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -93,11 +107,13 @@ export function Checkout({ cart, user, onOrderComplete, onBack }: CheckoutProps)
         
         // Simulate payment success
         setTimeout(() => {
-          onOrderComplete(data.orderId);
+          clearCart();
+          navigate(`/order-confirmation/${data.orderId}`);
         }, 1000);
       } else {
         // Cash on Delivery
-        onOrderComplete(data.orderId);
+        clearCart();
+        navigate(`/order-confirmation/${data.orderId}`);
       }
     } catch (err: any) {
       setError(err.message || 'Failed to place order. Please try again.');
@@ -110,7 +126,7 @@ export function Checkout({ cart, user, onOrderComplete, onBack }: CheckoutProps)
   return (
     <div className="container mx-auto px-4 py-8">
       <button
-        onClick={onBack}
+        onClick={() => navigate('/cart')}
         className="flex items-center gap-2 text-gray-600 hover:text-gray-900 mb-6"
       >
         <ArrowLeft className="w-5 h-5" />
