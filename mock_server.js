@@ -1,11 +1,14 @@
 const http = require('http');
-const { MongoClient } = require('mongodb');
+const fs = require('fs');
+const path = require('path');
 
-const PORT = 3005;
-const MONGO_URI = process.env.MONGODB_URI || 'mongodb://localhost:27017';
-const DB_NAME = process.env.MONGODB_DB || 'jewelpalace';
+const PORT = Number(process.env.PORT || 3006);
+const DATA_DIR = path.join(__dirname, 'data');
+const PRODUCTS_FILE = path.join(DATA_DIR, 'products.json');
+const ORDERS_FILE = path.join(DATA_DIR, 'orders.json');
+const USERS_FILE = path.join(DATA_DIR, 'users.json');
 
-let client, db, productsCol, ordersCol, usersCol;
+let memLoaded = false;
 
 const seedProducts = [
         {
@@ -84,20 +87,29 @@ const mem = {
     users: []
 };
 
-async function initMongo() {
-    client = new MongoClient(MONGO_URI);
-    await client.connect();
-    db = client.db(DB_NAME);
-    productsCol = db.collection('products');
-    ordersCol = db.collection('orders');
-    usersCol = db.collection('users');
-    await productsCol.createIndex({ id: 1 }, { unique: true });
-    await ordersCol.createIndex({ id: 1 }, { unique: true });
-    await usersCol.createIndex({ id: 1 }, { unique: true });
-    const count = await productsCol.countDocuments();
-    if (count === 0) {
-        await productsCol.insertMany(seedProducts.map(p => ({ ...p, createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() })));
+function ensureDataDir() {
+    if (!fs.existsSync(DATA_DIR)) fs.mkdirSync(DATA_DIR);
+    if (!fs.existsSync(PRODUCTS_FILE)) {
+        fs.writeFileSync(PRODUCTS_FILE, JSON.stringify(seedProducts, null, 2));
     }
+    if (!fs.existsSync(ORDERS_FILE)) {
+        fs.writeFileSync(ORDERS_FILE, JSON.stringify([], null, 2));
+    }
+    if (!fs.existsSync(USERS_FILE)) {
+        fs.writeFileSync(USERS_FILE, JSON.stringify([], null, 2));
+    }
+}
+
+function readJson(file) {
+    try {
+        return JSON.parse(fs.readFileSync(file, 'utf-8'));
+    } catch {
+        return [];
+    }
+}
+
+function writeJson(file, data) {
+    fs.writeFileSync(file, JSON.stringify(data, null, 2));
 }
 
 const server = http.createServer((req, res) => {
@@ -130,7 +142,7 @@ const server = http.createServer((req, res) => {
         // --- PRODUCT ROUTES ---
 
         if (req.url === '/make-server-ff9d2bf9/products' && req.method === 'GET') {
-            const products = productsCol ? await productsCol.find({}).toArray() : mem.products;
+            const products = readJson(PRODUCTS_FILE);
             res.writeHead(200, { 'Content-Type': 'application/json' });
             res.end(JSON.stringify({ products }));
             return;
@@ -138,7 +150,7 @@ const server = http.createServer((req, res) => {
 
         if (req.url.startsWith('/make-server-ff9d2bf9/products/') && req.method === 'GET') {
             const id = req.url.split('/').pop();
-            const product = productsCol ? await productsCol.findOne({ id }) : mem.products.find(p => p.id === id);
+            const product = readJson(PRODUCTS_FILE).find(p => p.id === id);
             if (product) {
                 res.writeHead(200, { 'Content-Type': 'application/json' });
                 res.end(JSON.stringify({ product }));
@@ -157,11 +169,9 @@ const server = http.createServer((req, res) => {
                 createdAt: new Date().toISOString(),
                 updatedAt: new Date().toISOString()
             };
-            if (productsCol) {
-                await productsCol.insertOne(newProduct);
-            } else {
-                mem.products.push(newProduct);
-            }
+            const products = readJson(PRODUCTS_FILE);
+            products.push(newProduct);
+            writeJson(PRODUCTS_FILE, products);
             res.writeHead(200, { 'Content-Type': 'application/json' });
             res.end(JSON.stringify({ product: newProduct, message: 'Product created successfully' }));
             return;
@@ -171,13 +181,13 @@ const server = http.createServer((req, res) => {
         if (req.url.startsWith('/make-server-ff9d2bf9/admin/products/') && req.method === 'PUT') {
             const id = req.url.split('/').pop();
             const updates = { ...data, updatedAt: new Date().toISOString() };
-            if (productsCol) {
-                await productsCol.updateOne({ id }, { $set: updates });
-            } else {
-                const idx = mem.products.findIndex(p => p.id === id);
-                if (idx !== -1) mem.products[idx] = { ...mem.products[idx], ...updates };
+            const products = readJson(PRODUCTS_FILE);
+            const idx = products.findIndex(p => p.id === id);
+            if (idx !== -1) {
+                products[idx] = { ...products[idx], ...updates };
+                writeJson(PRODUCTS_FILE, products);
             }
-            const product = productsCol ? await productsCol.findOne({ id }) : mem.products.find(p => p.id === id);
+            const product = products.find(p => p.id === id);
             res.writeHead(200, { 'Content-Type': 'application/json' });
             res.end(JSON.stringify({ product, message: 'Product updated successfully' }));
             return;
@@ -186,11 +196,8 @@ const server = http.createServer((req, res) => {
         // Delete Product (Admin)
         if (req.url.startsWith('/make-server-ff9d2bf9/admin/products/') && req.method === 'DELETE') {
             const id = req.url.split('/').pop();
-            if (productsCol) {
-                await productsCol.deleteOne({ id });
-            } else {
-                mem.products = mem.products.filter(p => p.id !== id);
-            }
+            const products = readJson(PRODUCTS_FILE).filter(p => p.id !== id);
+            writeJson(PRODUCTS_FILE, products);
             res.writeHead(200, { 'Content-Type': 'application/json' });
             res.end(JSON.stringify({ message: 'Product deleted successfully' }));
             return;
@@ -206,11 +213,9 @@ const server = http.createServer((req, res) => {
                 createdAt: new Date().toISOString(),
                 updatedAt: new Date().toISOString()
             };
-            if (ordersCol) {
-                await ordersCol.insertOne(newOrder);
-            } else {
-                mem.orders.push(newOrder);
-            }
+            const orders = readJson(ORDERS_FILE);
+            orders.push(newOrder);
+            writeJson(ORDERS_FILE, orders);
             res.writeHead(200, { 'Content-Type': 'application/json' });
             res.end(JSON.stringify({ orderId: newOrder.id, order: newOrder, message: 'Order created successfully' }));
             return;
@@ -221,11 +226,34 @@ const server = http.createServer((req, res) => {
         // Register
         if (req.url === '/make-server-ff9d2bf9/auth/register' && req.method === 'POST') {
             const { email, password, name } = data;
+            const isAdmin = (email && typeof email === 'string' && email.toLowerCase().includes('admin')) || false;
             const newUser = {
                 id: `user_${Date.now()}`,
                 email,
                 password, // In real app, hash this!
-                user_metadata: { name, isAdmin: false },
+                user_metadata: { name, isAdmin },
+                created_at: new Date().toISOString()
+            };
+            const users = readJson(USERS_FILE);
+            users.push(newUser);
+            writeJson(USERS_FILE, users);
+
+            res.writeHead(200, { 'Content-Type': 'application/json' });
+            res.end(JSON.stringify({
+                user: newUser,
+                session: { access_token: "mock_access_token_" + newUser.id }
+            }));
+            return;
+        }
+
+        // Create Admin (Explicit)
+        if (req.url === '/make-server-ff9d2bf9/auth/create-admin' && req.method === 'POST') {
+            const { email, password, name } = data;
+            const newUser = {
+                id: `user_${Date.now()}`,
+                email,
+                password, // In real app, hash this!
+                user_metadata: { name, isAdmin: true },
                 created_at: new Date().toISOString()
             };
             if (usersCol) {
@@ -305,7 +333,7 @@ const server = http.createServer((req, res) => {
         }
 
         if (req.url === '/make-server-ff9d2bf9/seed-demo-data' && req.method === 'POST') {
-            const count = productsCol ? await productsCol.countDocuments() : mem.products.length;
+            const count = readJson(PRODUCTS_FILE).length;
             res.writeHead(200, { 'Content-Type': 'application/json' });
             res.end(JSON.stringify({ message: 'Demo data seeded successfully', productsCreated: count }));
             return;
@@ -321,13 +349,7 @@ const server = http.createServer((req, res) => {
     });
 });
 
-initMongo().then(() => {
-    server.listen(PORT, () => {
-        console.log(`Mock server running on http://localhost:${PORT}`);
-    });
-}).catch(err => {
-    console.error('Failed to initialize MongoDB', err);
-    server.listen(PORT, () => {
-        console.log(`Mock server running on http://localhost:${PORT}`);
-    });
+ensureDataDir();
+server.listen(PORT, () => {
+    console.log(`Mock server running on http://localhost:${PORT}`);
 });
