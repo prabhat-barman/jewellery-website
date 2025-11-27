@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { projectId, publicAnonKey } from '../utils/supabase/info';
+import { publicAnonKey, functionsBase } from '../utils/supabase/info';
 
 export function InitializeDemoData() {
   const [initialized, setInitialized] = useState(false);
@@ -10,7 +10,7 @@ export function InitializeDemoData() {
       try {
         // Check if data already exists
         const checkResponse = await fetch(
-          `https://${projectId}.supabase.co/functions/v1/make-server-ff9d2bf9/products`,
+          `${functionsBase}/make-server-ff9d2bf9/products`,
           {
             headers: {
               'Authorization': `Bearer ${publicAnonKey}`,
@@ -29,7 +29,7 @@ export function InitializeDemoData() {
 
         // Seed demo data
         const seedResponse = await fetch(
-          `https://${projectId}.supabase.co/functions/v1/make-server-ff9d2bf9/seed-demo-data`,
+          `${functionsBase}/make-server-ff9d2bf9/seed-demo-data`,
           {
             method: 'POST',
             headers: {

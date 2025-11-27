@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { CreditCard, MapPin, User as UserIcon, Phone, Mail, ArrowLeft, AlertCircle } from 'lucide-react';
-import { projectId, publicAnonKey } from '../utils/supabase/info';
+import { functionsBase } from '../utils/supabase/info';
 import { useCart } from '../context/CartContext';
 import { useAuth } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
@@ -49,7 +49,7 @@ export function Checkout() {
   const handleAddressSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
-    
+
     if (!phone || !address || !city || !state || !pincode) {
       setError('Please fill in all address fields');
       return;
@@ -83,7 +83,7 @@ export function Checkout() {
       };
 
       const response = await fetch(
-        `https://${projectId}.supabase.co/functions/v1/make-server-ff9d2bf9/orders/create`,
+        `${functionsBase}/make-server-ff9d2bf9/orders/create`,
         {
           method: 'POST',
           headers: {
@@ -104,7 +104,7 @@ export function Checkout() {
         // In a real implementation, this would integrate with Razorpay
         // For demo purposes, we'll simulate payment
         console.log('Initiating Razorpay payment for order:', data.orderId);
-        
+
         // Simulate payment success
         setTimeout(() => {
           clearCart();
@@ -141,18 +141,16 @@ export function Checkout() {
           {/* Progress Indicator */}
           <div className="flex items-center gap-4 mb-8">
             <div className={`flex items-center gap-2 ${step === 'address' ? 'text-amber-600' : 'text-green-600'}`}>
-              <div className={`w-8 h-8 rounded-full flex items-center justify-center ${
-                step === 'address' ? 'bg-amber-600 text-white' : 'bg-green-600 text-white'
-              }`}>
+              <div className={`w-8 h-8 rounded-full flex items-center justify-center ${step === 'address' ? 'bg-amber-600 text-white' : 'bg-green-600 text-white'
+                }`}>
                 {step === 'payment' ? '✓' : '1'}
               </div>
               <span>Address</span>
             </div>
             <div className="flex-1 h-px bg-gray-300" />
             <div className={`flex items-center gap-2 ${step === 'payment' ? 'text-amber-600' : 'text-gray-400'}`}>
-              <div className={`w-8 h-8 rounded-full flex items-center justify-center ${
-                step === 'payment' ? 'bg-amber-600 text-white' : 'bg-gray-300 text-white'
-              }`}>
+              <div className={`w-8 h-8 rounded-full flex items-center justify-center ${step === 'payment' ? 'bg-amber-600 text-white' : 'bg-gray-300 text-white'
+                }`}>
                 2
               </div>
               <span>Payment</span>

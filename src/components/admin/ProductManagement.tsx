@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Plus, Edit2, Trash2, Eye, EyeOff, Search, AlertCircle, CheckCircle } from 'lucide-react';
-import { projectId, publicAnonKey } from '../../utils/supabase/info';
+import { publicAnonKey, functionsBase } from '../../utils/supabase/info';
 import type { User } from '../../App';
 
 type Product = {
@@ -55,7 +55,7 @@ export function ProductManagement({ user }: ProductManagementProps) {
     setLoading(true);
     try {
       const response = await fetch(
-        `https://${projectId}.supabase.co/functions/v1/make-server-ff9d2bf9/products`,
+        `${functionsBase}/make-server-ff9d2bf9/products`,
         {
           headers: {
             'Authorization': `Bearer ${publicAnonKey}`,
@@ -130,8 +130,8 @@ export function ProductManagement({ user }: ProductManagementProps) {
 
     try {
       const url = editingProduct
-        ? `https://${projectId}.supabase.co/functions/v1/make-server-ff9d2bf9/admin/products/${editingProduct.id}`
-        : `https://${projectId}.supabase.co/functions/v1/make-server-ff9d2bf9/admin/products`;
+        ? `${functionsBase}/make-server-ff9d2bf9/admin/products/${editingProduct.id}`
+        : `${functionsBase}/make-server-ff9d2bf9/admin/products`;
 
       const response = await fetch(url, {
         method: editingProduct ? 'PUT' : 'POST',
@@ -161,7 +161,7 @@ export function ProductManagement({ user }: ProductManagementProps) {
 
     try {
       const response = await fetch(
-        `https://${projectId}.supabase.co/functions/v1/make-server-ff9d2bf9/admin/products/${productId}`,
+        `${functionsBase}/make-server-ff9d2bf9/admin/products/${productId}`,
         {
           method: 'DELETE',
           headers: {
@@ -186,7 +186,7 @@ export function ProductManagement({ user }: ProductManagementProps) {
   const toggleEnabled = async (product: Product) => {
     try {
       const response = await fetch(
-        `https://${projectId}.supabase.co/functions/v1/make-server-ff9d2bf9/admin/products/${product.id}`,
+        `${functionsBase}/make-server-ff9d2bf9/admin/products/${product.id}`,
         {
           method: 'PUT',
           headers: {

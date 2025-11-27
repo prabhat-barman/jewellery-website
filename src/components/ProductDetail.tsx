@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Star, ShoppingCart, Heart, Share2, ChevronLeft, Truck, Shield, RotateCcw } from 'lucide-react';
-import { projectId, publicAnonKey } from '../utils/supabase/info';
+import { publicAnonKey, functionsBase } from '../utils/supabase/info';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useCart } from '../context/CartContext';
 
@@ -24,7 +24,7 @@ export function ProductDetail() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { addToCart } = useCart();
-  
+
   const [product, setProduct] = useState<Product | null>(null);
   const [loading, setLoading] = useState(true);
   const [quantity, setQuantity] = useState(1);
@@ -38,7 +38,7 @@ export function ProductDetail() {
   const fetchProduct = async () => {
     try {
       const response = await fetch(
-        `https://${projectId}.supabase.co/functions/v1/make-server-ff9d2bf9/products/${id}`,
+        `${functionsBase}/make-server-ff9d2bf9/products/${id}`,
         {
           headers: {
             'Authorization': `Bearer ${publicAnonKey}`,
@@ -61,7 +61,7 @@ export function ProductDetail() {
     if (!product) return;
 
     const finalPrice = product.price - (product.price * product.discount / 100);
-    
+
     addToCart({
       productId: product.id,
       name: product.name,
@@ -122,11 +122,11 @@ export function ProductDetail() {
         <div>
           <div className="bg-gradient-to-br from-amber-100 to-amber-200 rounded-2xl aspect-square flex items-center justify-center mb-4">
             <div className="text-9xl">
-              {product.category === 'Rings' ? '💍' : 
-               product.category === 'Earrings' ? '✨' :
-               product.category === 'Necklaces' ? '📿' :
-               product.category === 'Bangles' ? '⭕' :
-               product.category === 'Bracelets' ? '🔗' : '💎'}
+              {product.category === 'Rings' ? '💍' :
+                product.category === 'Earrings' ? '✨' :
+                  product.category === 'Necklaces' ? '📿' :
+                    product.category === 'Bangles' ? '⭕' :
+                      product.category === 'Bracelets' ? '🔗' : '💎'}
             </div>
             {product.discount > 0 && (
               <div className="absolute top-8 right-8 bg-red-500 text-white px-4 py-2 rounded-full">
@@ -141,9 +141,8 @@ export function ProductDetail() {
               <button
                 key={index}
                 onClick={() => setSelectedImage(index)}
-                className={`bg-gradient-to-br from-amber-100 to-amber-200 rounded-lg aspect-square ${
-                  selectedImage === index ? 'ring-2 ring-amber-600' : ''
-                }`}
+                className={`bg-gradient-to-br from-amber-100 to-amber-200 rounded-lg aspect-square ${selectedImage === index ? 'ring-2 ring-amber-600' : ''
+                  }`}
               />
             ))}
           </div>
@@ -156,17 +155,16 @@ export function ProductDetail() {
               {product.category}
             </span>
             <h1 className="text-4xl mb-4">{product.name}</h1>
-            
+
             <div className="flex items-center gap-4 mb-4">
               <div className="flex items-center gap-1">
                 {[...Array(5)].map((_, i) => (
                   <Star
                     key={i}
-                    className={`w-5 h-5 ${
-                      i < Math.floor(product.rating)
+                    className={`w-5 h-5 ${i < Math.floor(product.rating)
                         ? 'fill-amber-400 text-amber-400'
                         : 'text-gray-300'
-                    }`}
+                      }`}
                   />
                 ))}
                 <span className="ml-2 text-gray-600">({product.rating} / 5)</span>

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Package, MapPin, CreditCard, User as UserIcon, FileText, AlertCircle } from 'lucide-react';
-import { projectId, publicAnonKey } from '../utils/supabase/info';
+import { functionsBase } from '../utils/supabase/info';
 import { useAuth } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
 
@@ -37,7 +37,7 @@ export function UserDashboard() {
     setLoading(true);
     try {
       const response = await fetch(
-        `https://${projectId}.supabase.co/functions/v1/make-server-ff9d2bf9/orders/user`,
+        `${functionsBase}/make-server-ff9d2bf9/orders/user`,
         {
           headers: {
             'Authorization': `Bearer ${user.accessToken}`,

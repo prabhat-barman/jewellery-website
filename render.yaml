@@ -1,0 +1,18 @@
+services:
+  - type: web
+    name: jewellery-api
+    env: node
+    plan: free
+    buildCommand: npm install
+    startCommand: node mock_server.js
+    envVars:
+      - key: MONGODB_URI
+        fromSecret: mongodb-uri
+      - key: MONGODB_DB
+        value: jewelpalace
+
+  - type: web
+    name: jewellery-frontend
+    env: static
+    buildCommand: npm install && npm run build
+    staticPublishPath: build

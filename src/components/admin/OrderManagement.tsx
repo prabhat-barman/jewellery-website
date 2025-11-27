@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Search, Eye, Truck, CheckCircle, XCircle, AlertCircle } from 'lucide-react';
-import { projectId } from '../../utils/supabase/info';
+import { functionsBase } from '../../utils/supabase/info';
 import type { User } from '../../App';
 
 type Order = {
@@ -48,7 +48,7 @@ export function OrderManagement({ user }: OrderManagementProps) {
     setLoading(true);
     try {
       const response = await fetch(
-        `https://${projectId}.supabase.co/functions/v1/make-server-ff9d2bf9/admin/orders`,
+        `${functionsBase}/make-server-ff9d2bf9/admin/orders`,
         {
           headers: {
             'Authorization': `Bearer ${user.accessToken}`,
@@ -81,7 +81,7 @@ export function OrderManagement({ user }: OrderManagementProps) {
 
     try {
       const response = await fetch(
-        `https://${projectId}.supabase.co/functions/v1/make-server-ff9d2bf9/admin/orders/${selectedOrder.id}/status`,
+        `${functionsBase}/make-server-ff9d2bf9/admin/orders/${selectedOrder.id}/status`,
         {
           method: 'PUT',
           headers: {
@@ -116,7 +116,7 @@ export function OrderManagement({ user }: OrderManagementProps) {
 
     try {
       const response = await fetch(
-        `https://${projectId}.supabase.co/functions/v1/make-server-ff9d2bf9/admin/orders/${orderId}/status`,
+        `${functionsBase}/make-server-ff9d2bf9/admin/orders/${orderId}/status`,
         {
           method: 'PUT',
           headers: {

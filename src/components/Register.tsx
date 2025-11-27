@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Mail, Lock, User as UserIcon, AlertCircle, CheckCircle, Crown } from 'lucide-react';
-import { projectId, publicAnonKey } from '../utils/supabase/info';
+import { publicAnonKey, functionsBase } from '../utils/supabase/info';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 
@@ -34,7 +34,7 @@ export function Register() {
 
     try {
       const response = await fetch(
-        `https://${projectId}.supabase.co/functions/v1/make-server-ff9d2bf9/auth/register`,
+        `${functionsBase}/make-server-ff9d2bf9/auth/register`,
         {
           method: 'POST',
           headers: {
@@ -52,20 +52,20 @@ export function Register() {
       }
 
       setSuccess('Account created successfully! Logging you in...');
-      
+
       // Auto-login after registration
       setTimeout(() => {
         if (data.user && data.session) {
-            setUser({
-              id: data.user.id,
-              email: data.user.email,
-              name: data.user.user_metadata?.name || name,
-              isAdmin: false,
-              accessToken: data.session.access_token,
-            });
-            navigate('/');
+          setUser({
+            id: data.user.id,
+            email: data.user.email,
+            name: data.user.user_metadata?.name || name,
+            isAdmin: false,
+            accessToken: data.session.access_token,
+          });
+          navigate('/');
         } else {
-             navigate('/login');
+          navigate('/login');
         }
       }, 1500);
     } catch (err: any) {

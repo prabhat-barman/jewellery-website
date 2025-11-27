@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { createClient } from '@supabase/supabase-js';
-import { projectId, publicAnonKey } from '../utils/supabase/info';
+import { projectId, publicAnonKey, supabaseUrl } from '../utils/supabase/info';
 
 export type User = {
   id: string;
@@ -21,7 +21,7 @@ type AuthContextType = {
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 const supabase = createClient(
-  `https://${projectId}.supabase.co`,
+  supabaseUrl,
   publicAnonKey
 );
 

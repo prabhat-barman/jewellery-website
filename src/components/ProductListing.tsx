@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Filter, Grid, List, Star, ChevronDown } from 'lucide-react';
-import { projectId, publicAnonKey } from '../utils/supabase/info';
+import { publicAnonKey, functionsBase } from '../utils/supabase/info';
 import { useParams, useSearchParams, useNavigate } from 'react-router-dom';
 
 type Product = {
@@ -61,7 +61,7 @@ export function ProductListing() {
   const fetchProducts = async () => {
     try {
       const response = await fetch(
-        `https://${projectId}.supabase.co/functions/v1/make-server-ff9d2bf9/products`,
+        `${functionsBase}/make-server-ff9d2bf9/products`,
         {
           headers: {
             'Authorization': `Bearer ${publicAnonKey}`,
@@ -89,8 +89,8 @@ export function ProductListing() {
     // Filter by Search Query
     if (searchQuery) {
       const query = searchQuery.toLowerCase();
-      filtered = filtered.filter(p => 
-        p.name.toLowerCase().includes(query) || 
+      filtered = filtered.filter(p =>
+        p.name.toLowerCase().includes(query) ||
         p.description?.toLowerCase().includes(query) ||
         p.category.toLowerCase().includes(query)
       );
@@ -158,12 +158,12 @@ export function ProductListing() {
     // If they are on /category/rings, and click "Necklaces", what happens?
     // Usually category pages only show that category.
     // If we are on /products, we can select multiple.
-    
+
     if (category) {
-       // If on a dedicated page, maybe we should redirect to /products? or just allow filtering
-       // Let's allow filtering.
+      // If on a dedicated page, maybe we should redirect to /products? or just allow filtering
+      // Let's allow filtering.
     }
-    
+
     setSelectedCategories(prev =>
       prev.includes(cat)
         ? prev.filter(c => c !== cat)
@@ -347,30 +347,28 @@ export function ProductListing() {
               </button>
             </div>
           ) : (
-            <div className={viewMode === 'grid' 
+            <div className={viewMode === 'grid'
               ? 'grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6'
               : 'space-y-4'
             }>
               {filteredProducts.map(product => {
                 const finalPrice = calculateFinalPrice(product.price, product.discount);
-                
+
                 return (
                   <div
                     key={product.id}
                     onClick={() => navigate(`/product/${product.id}`)}
-                    className={`bg-white rounded-xl overflow-hidden shadow-md hover:shadow-xl transition-shadow cursor-pointer ${
-                      viewMode === 'list' ? 'flex gap-4' : ''
-                    }`}
+                    className={`bg-white rounded-xl overflow-hidden shadow-md hover:shadow-xl transition-shadow cursor-pointer ${viewMode === 'list' ? 'flex gap-4' : ''
+                      }`}
                   >
-                    <div className={`relative bg-gradient-to-br from-amber-100 to-amber-200 ${
-                      viewMode === 'list' ? 'w-48 flex-shrink-0' : 'aspect-square'
-                    }`}>
+                    <div className={`relative bg-gradient-to-br from-amber-100 to-amber-200 ${viewMode === 'list' ? 'w-48 flex-shrink-0' : 'aspect-square'
+                      }`}>
                       <div className="absolute inset-0 flex items-center justify-center text-6xl">
-                        {product.category === 'Rings' ? '💍' : 
-                         product.category === 'Earrings' ? '✨' :
-                         product.category === 'Necklaces' ? '📿' :
-                         product.category === 'Bangles' ? '⭕' :
-                         product.category === 'Bracelets' ? '🔗' : '💎'}
+                        {product.category === 'Rings' ? '💍' :
+                          product.category === 'Earrings' ? '✨' :
+                            product.category === 'Necklaces' ? '📿' :
+                              product.category === 'Bangles' ? '⭕' :
+                                product.category === 'Bracelets' ? '🔗' : '💎'}
                       </div>
                       {product.discount > 0 && (
                         <div className="absolute top-4 right-4 bg-red-500 text-white px-3 py-1 rounded-full text-sm">
